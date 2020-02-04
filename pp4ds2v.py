@@ -1,8 +1,8 @@
 # ds2vpp.py
-# psotprocessing tool for ds2v program
+# psotprocessing tool for ds2v output data
 # 1. profile of Couette flow
 # 2. stagnation streamline
-# 3. surface pressure, shear stress and heat flux
+# 3. surface pressure, shear stress and heat flux (unfinished)
 # 4. profile of the blunt shear flow
 # Kenzo LUO
 # 2020.02.04
