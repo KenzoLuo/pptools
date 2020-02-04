@@ -5,7 +5,7 @@
 # 3. surface pressure, shear stress and heat flux
 # 4. profile of the blunt shear flow
 # Kenzo LUO
-# 2020.01.23
+# 2020.02.04
 
 import numpy as np
 import argparse
@@ -116,13 +116,6 @@ def resave_data_couette(profile_list):
     n = profile_arr[:, 2]
 
     with open(args.resave, 'w') as f:
-        # tecplot data file
-        # f.write('TITLE ="TimeStep"\n')
-        # f.write('VARIABLES= y n den u v Trot Tvib Ttra p MFP Kncell\n')
-        # for idx in range(len(profile)):
-        #    each_data = map(str, profile[idx])
-        #    f.write(' '.join(tuple(each_data)) + '\n')
-
         # OriginLab data file
         f.write('y ttra trot tvib u p n\n')
         for idx in range(len(profile_list)):
