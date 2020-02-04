@@ -273,4 +273,4 @@ if __name__ == '__main__':
     elif args.style == 'blunt':
         pp4blunt(ds2ff_list, ds2su_list)
     else:
-        print ('pp style should be "couette" or "blunt", postprocessing abort!')
+        print ('pp style should be "couette" or "blunt", postprocessing abort! ')
