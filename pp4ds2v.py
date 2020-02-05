@@ -163,7 +163,7 @@ def extract_sl_data(ds2ff_list):
         each_data = ds2ff_sort_arr[idx, :]
         stag_line_list.append(each_data)
         idx, cur_y = idx + 1, ds2ff_sort_arr[idx, 1]
-    # print (len(stag_line_list))
+    print('%d points of the stag_stream line are extracted!' % len(stag_line_list))
     return stag_line_list
 
 
@@ -179,8 +179,8 @@ def extract_shear_profile(ds2ff_list):
             each_data = ds2ff_sort_arr[idx, :]
             shear_prof_list.append(each_data)
         x1 = ds2ff_sort_arr[idx, 0]
-        y1 = ds2ff_sort_arr[idx, 1]
-    print(len(shear_prof_list))
+        y1 = ds2ff_sort_arr[idx, 1]   
+    print('%d points of the shear profile are extracted!' % len(shear_prof_list))
     shear_prof_list = sorted(shear_prof_list, key=lambda i: i[1])
     shear_prof_arr = np.array(shear_prof_list)
     ttra = shear_prof_arr[:, 7]
@@ -197,7 +197,7 @@ def extract_shear_profile(ds2ff_list):
     plt.ylabel('y(m)')
     plt.savefig('shear_profile.png')
     print('shear_profile visualization images saved. ')
-    print('unfinished')
+    # print('unfinished')
     return shear_prof_list
 
 
@@ -275,26 +275,35 @@ if __name__ == '__main__':
 
     arg = sys.argv
     narg = len(sys.argv)
-    if narg < 4: error("")
+    # print (narg)
+    if narg < 3: error("1")
     style = arg[2]
+    
+    outfile = "resaved.dat"
+    prof = "no"
 
     iarg = 3
     while iarg < narg:
         if arg[iarg] == "outfile":
-            if iarg + 1 > narg: error("")
+            if iarg + 2 > narg: error("outfile path not defined")
             outfile = arg[iarg + 1]
-            iarg += 1
+            iarg += 2
         elif arg[iarg] == "prof":
-            if iarg + 1 > narg: error("")
+            print ("bug")
+            if iarg + 2 > narg: error("prof arg err")
             prof = arg[iarg + 1]
-            iarg += 1
+            iarg += 2
         elif arg[iarg] == "norm":
-            if iarg + 3 > narg: error("")
+            if iarg + 4 > narg: error("norm should be followed by 'upu uptemp uptvib' ")
             upu = float(arg[iarg + 1])
             uptemp = float(arg[iarg + 2])
             uptvib = float(arg[iarg + 3])
-            iarg += 3
-        else: error("")
+            iarg += 4
+        else: error("2")
+
+    # data reconstruction
+    ds2ff_list = read_data_ds2ff('DS2FF.DAT')
+    ds2su_list = read_data_ds2su('DS2SU.DAT')
 
     # switch postprocessing style
     if style == 'couette':
@@ -303,9 +312,3 @@ if __name__ == '__main__':
         pp4blunt(ds2ff_list, ds2su_list)
     else:
         error('pp style should be "couette" or "blunt", postprocessing abort! ')
-
-    # data reconstruction
-    ds2ff_list = read_data_ds2ff('DS2FF.DAT')
-    ds2su_list = read_data_ds2su('DS2SU.DAT')
-
-
