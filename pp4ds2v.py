@@ -10,7 +10,16 @@
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+import sys
 plt.switch_backend('agg')
+
+
+# error message
+
+def error(str):
+    if str: print("ERROR:", str)
+    else: print("Syntax: pp4ds2v.py style blunt/couette/surf keyword args ...")
+    sys.exit()
 
 
 def read_data_ds2ff(file_path):
@@ -63,8 +72,8 @@ def pack_data(data_sort_arr):
     return profile_list
 
 
-def visualize_couette(resaved_file):
-    with open(resaved_file, 'r') as f:
+def visualize_couette(outfile):
+    with open(outfile, 'r') as f:
         data = f.readlines()
     y_list, ttra_list, trot_list, tvib_list, u_list = list(), list(), list(), list(), list()
     for line in data[1:]:
@@ -98,24 +107,24 @@ def visualize_couette(resaved_file):
 
 def resave_data_couette(profile_list):
     profile_arr = np.array(profile_list)
-    if args.uptemp != 1:
+    if uptemp != 1:
         # ttra = (profile_arr[:, 7] - 300) / (args.uptemp - 300)
         # trot = (profile_arr[:, 8] - 300) / (args.uptemp - 300)
-        ttra = profile_arr[:, 7] / args.uptemp
-        trot = profile_arr[:, 8] / args.uptemp
+        ttra = profile_arr[:, 7] / uptemp
+        trot = profile_arr[:, 8] / uptemp
     else:
         ttra = profile_arr[:, 7]
         trot = profile_arr[:, 8]
-    if args.uptvib != 1:
-        tvib = (profile_arr[:, 9] - 300) / (args.uptvib - 300)
+    if uptvib != 1:
+        tvib = (profile_arr[:, 9] - 300) / (uptvib - 300)
     else:
         tvib = profile_arr[:, 9]
-    u = profile_arr[:, 4] / args.upu
+    u = profile_arr[:, 4] / upu
     y = profile_arr[:, 1]
     p = profile_arr[:, 18]
     n = profile_arr[:, 2]
 
-    with open(args.resave, 'w') as f:
+    with open(outfile, 'w') as f:
         # OriginLab data file
         f.write('y ttra trot tvib u p n\n')
         for idx in range(len(profile_list)):
@@ -130,21 +139,21 @@ def cal_heat_flux_wall(ds2su_list):
     ds2su_list_arr = np.array(ds2su_list)
     heat_flux = np.mean(ds2su_list_arr[:, 9])
     # heat_flux_var = np.std(ds2su_list_arr[:, 9], ddof=1)
-    print('Heat FLux to the wall = %.2f ' %(heat_flux))
- 
- 
+    print('Heat FLux to the wall = %.2f ' % (heat_flux))
+
+
 def pp4couette(ds2ff_list, ds2su_list):
-    ds2ff_sort_list = sorted(ds2ff_list, key=lambda i: i[1]) # sort by 'y'
+    ds2ff_sort_list = sorted(ds2ff_list, key=lambda i: i[1])  # sort by 'y'
     ds2ff_sort_arr = np.array(ds2ff_sort_list)
-    profile_list = pack_data(ds2ff_sort_arr) # average in x direction
+    profile_list = pack_data(ds2ff_sort_arr)  # average in x direction
     resave_data_couette(profile_list)
-    visualize_couette(args.resave)
+    visualize_couette(outfile)
     cal_heat_flux_wall(ds2su_list)
 
 
 # processing for blunt flow
 def extract_sl_data(ds2ff_list):
-    ds2ff_sort_list = sorted(ds2ff_list, key=lambda i: i[1]) # sort by 'y'
+    ds2ff_sort_list = sorted(ds2ff_list, key=lambda i: i[1])  # sort by 'y'
     ds2ff_sort_arr = np.array(ds2ff_sort_list)
     stag_line_list = []
     max_y = ds2ff_sort_arr[len(ds2ff_sort_arr) - 1][1]
@@ -160,10 +169,10 @@ def extract_sl_data(ds2ff_list):
 
 def extract_shear_profile(ds2ff_list):
     # profile through (0.55,0.17)
-    ds2ff_sort_list = sorted(ds2ff_list, key=lambda i: i[0]) # sort by 'x'
+    ds2ff_sort_list = sorted(ds2ff_list, key=lambda i: i[0])  # sort by 'x'
     ds2ff_sort_arr = np.array(ds2ff_sort_list)
     shear_prof_list = []
-    x1 = ds2ff_sort_arr[len(ds2ff_sort_arr) - 1][0] 
+    x1 = ds2ff_sort_arr[len(ds2ff_sort_arr) - 1][0]
     y1 = ds2ff_sort_arr[len(ds2ff_sort_arr) - 1][1]
     for idx in range(len(ds2ff_sort_arr) - 1, 1, -1):
         if abs((x1 - 0.3)*1 + (y1 - 0.1)*0.16) < 0.001:
@@ -217,15 +226,16 @@ def visualize_stag_line(stag_line_list):
 
 
 def resave_data_blunt(ds2ff_list):
-    with open(args.resave, 'w') as f:
+    with open(outfile, 'w') as f:
         # tecplot data file
         f.write('TITLE ="stagnation_flow"\n')
-        f.write('VARIABLES= x y n den u v w Ttra Trot Tvib T ma mc mct mfp sof fsp ang p \n')
+        f.write(
+            'VARIABLES= x y n den u v w Ttra Trot Tvib T ma mc mct mfp sof fsp ang p \n')
         for idx in range(len(ds2ff_list)):
             each_data = map(str, ds2ff_list[idx])
             f.write(' '.join(tuple(each_data)) + '\n')
         print('Tecplot data resaved. ')
-  
+
 
 def cal_heat_flux_stag(ds2su_list):
     # Stagnation point heat flux
@@ -236,7 +246,7 @@ def cal_heat_flux_stag(ds2su_list):
     q = ds2su_arr[int(0.05*len_of_surf):int(0.35*len_of_surf), 9]
     z1 = np.polyfit(s, q, 1)
     heat_flux = z1[1]
-    print ('Heat FLux to Stag Point = %.2f ' %(heat_flux))
+    print('Heat FLux to Stag Point = %.2f ' % (heat_flux))
 
 
 def pp4blunt(ds2ff_list, ds2su_list):
@@ -244,33 +254,58 @@ def pp4blunt(ds2ff_list, ds2su_list):
     resave_data_blunt(ds2ff_list)
     visualize_stag_line(stag_line_list)
     cal_heat_flux_stag(ds2su_list)
-    if args.profile == 'yes':
+    if prof == 'yes':
         extract_shear_profile(ds2ff_list)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='detect table lines')
-    parser.add_argument('style', type=str, help='the path of input file.')
-    parser.add_argument('--resave', type=str,
-                        help='the resaved file.', default='resaved.dat')
-    parser.add_argument('--profile', type=str,
-                        help='extract flow profile in the shear flow or not, "yes" or "no". ', default='no')
-    parser.add_argument('--upu', type=int,
-                        help='the velocity of upper boundary', default=1)
-    parser.add_argument('--uptemp', type=int,
-                        help='the temperature of upper boundary', default=1)
-    parser.add_argument('--uptvib', type=int, 
-                        help='the vibrational temp of upper boundary', default=1)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser(description='detect table lines')
+    # parser.add_argument('style', type=str, help='the path of input file.')
+    # parser.add_argument('--resave', type=str,
+    #                     help='the resaved file.', default='resaved.dat')
+    # parser.add_argument('--prof', type=str,
+    #                     help='extract flow profile in the shear flow or not, "yes" or "no". ', default='no')
+    # parser.add_argument('--upu', type=int,
+    #                     help='the velocity of upper boundary', default=1)
+    # parser.add_argument('--uptemp', type=int,
+    #                     help='the temperature of upper boundary', default=1)
+    # parser.add_argument('--uptvib', type=int,
+    #                     help='the vibrational temp of upper boundary', default=1)
+    # args = parser.parse_args()
+
+    arg = sys.argv
+    narg = len(sys.argv)
+    if narg < 4: error("")
+    style = arg[2]
+
+    iarg = 3
+    while iarg < narg:
+        if arg[iarg] == "outfile":
+            if iarg + 1 > narg: error("")
+            outfile = arg[iarg + 1]
+            iarg += 1
+        elif arg[iarg] == "prof":
+            if iarg + 1 > narg: error("")
+            prof = arg[iarg + 1]
+            iarg += 1
+        elif arg[iarg] == "norm":
+            if iarg + 3 > narg: error("")
+            upu = float(arg[iarg + 1])
+            uptemp = float(arg[iarg + 2])
+            uptvib = float(arg[iarg + 3])
+            iarg += 3
+        else: error("")
+
+    # switch postprocessing style
+    if style == 'couette':
+        pp4couette(ds2ff_list, ds2su_list)
+    elif style == 'blunt':
+        pp4blunt(ds2ff_list, ds2su_list)
+    else:
+        error('pp style should be "couette" or "blunt", postprocessing abort! ')
 
     # data reconstruction
     ds2ff_list = read_data_ds2ff('DS2FF.DAT')
     ds2su_list = read_data_ds2su('DS2SU.DAT')
 
-    # switch postprocessing style
-    if args.style == 'couette':
-        pp4couette(ds2ff_list, ds2su_list)
-    elif args.style == 'blunt':
-        pp4blunt(ds2ff_list, ds2su_list)
-    else:
-        print ('pp style should be "couette" or "blunt", postprocessing abort! ')
+
