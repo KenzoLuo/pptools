@@ -18,7 +18,7 @@ plt.switch_backend('agg')
 
 def error(str):
     if str: print("ERROR:", str)
-    else: print("Syntax: pp4ds2v.py style blunt/couette/surf keyword args ...")
+    else: print("Syntax: pp4ds2v.py style blunt/couette keyword args ...")
     sys.exit()
 
 
@@ -107,6 +107,10 @@ def visualize_couette(outfile):
 
 def resave_data_couette(profile_list):
     profile_arr = np.array(profile_list)
+    u = profile_arr[:, 4] / upu
+    y = profile_arr[:, 1]
+    p = profile_arr[:, 18]
+    n = profile_arr[:, 2]
     if uptemp != 1:
         # ttra = (profile_arr[:, 7] - 300) / (args.uptemp - 300)
         # trot = (profile_arr[:, 8] - 300) / (args.uptemp - 300)
@@ -119,10 +123,6 @@ def resave_data_couette(profile_list):
         tvib = (profile_arr[:, 9] - 300) / (uptvib - 300)
     else:
         tvib = profile_arr[:, 9]
-    u = profile_arr[:, 4] / upu
-    y = profile_arr[:, 1]
-    p = profile_arr[:, 18]
-    n = profile_arr[:, 2]
 
     with open(outfile, 'w') as f:
         # OriginLab data file
@@ -201,6 +201,25 @@ def extract_shear_profile(ds2ff_list):
     return shear_prof_list
 
 
+def resave_surf_blunt(ds2su_list):
+    surf_arr = np.array(ds2su_list)
+    x = surf_arr[:, 1]
+    y = surf_arr[:, 2]
+    s = surf_arr[:, 0]
+    p = surf_arr[:, 4]
+    tau = surf_arr[:, 5]
+    q = surf_arr[:, 9]
+
+    with open('surf_' + outfile, 'w') as f:
+        # OriginLab data file
+        f.write('y ttra trot tvib u p n\n')
+        for idx in range(len(ds2su_list)):
+            each_data = map(
+                str, [x[idx], y[idx], s[idx], p[idx], tau[idx], q[idx] ])
+            f.write(' '.join(tuple(each_data)) + '\n')
+    print('Surf data "%s" resaved. ' %('surf_' + outfile))
+
+
 def visualize_stag_line(stag_line_list):
     stag_line_list = sorted(stag_line_list, key=lambda i: i[0])
     stag_line_arr = np.array(stag_line_list)
@@ -226,7 +245,7 @@ def visualize_stag_line(stag_line_list):
 
 
 def resave_data_blunt(ds2ff_list):
-    with open(outfile, 'w') as f:
+    with open('grid_' + outfile, 'w') as f:
         # tecplot data file
         f.write('TITLE ="stagnation_flow"\n')
         f.write(
@@ -234,7 +253,7 @@ def resave_data_blunt(ds2ff_list):
         for idx in range(len(ds2ff_list)):
             each_data = map(str, ds2ff_list[idx])
             f.write(' '.join(tuple(each_data)) + '\n')
-        print('Tecplot data resaved. ')
+        print('Grid data "%s" resaved. ' %('grid_' + outfile))
 
 
 def cal_heat_flux_stag(ds2su_list):
@@ -246,16 +265,18 @@ def cal_heat_flux_stag(ds2su_list):
     q = ds2su_arr[int(0.05*len_of_surf):int(0.35*len_of_surf), 9]
     z1 = np.polyfit(s, q, 1)
     heat_flux = z1[1]
-    print('Heat FLux to Stag Point = %.2f ' % (heat_flux))
+    print('Heat FLux to Stag Point = %.2f ' %(heat_flux))
 
 
 def pp4blunt(ds2ff_list, ds2su_list):
-    stag_line_list = extract_sl_data(ds2ff_list)
     resave_data_blunt(ds2ff_list)
+    stag_line_list = extract_sl_data(ds2ff_list)
     visualize_stag_line(stag_line_list)
     cal_heat_flux_stag(ds2su_list)
     if prof == 'yes':
         extract_shear_profile(ds2ff_list)
+    if surf == 'yes':
+        resave_surf_blunt(ds2su_list)
 
 
 if __name__ == '__main__':
@@ -276,22 +297,26 @@ if __name__ == '__main__':
     arg = sys.argv
     narg = len(sys.argv)
     # print (narg)
-    if narg < 3: error("1")
-    style = arg[2]
+    if narg < 2: error("")
+    style = arg[1]
     
     outfile = "resaved.dat"
     prof = "no"
+    surf = "no"
 
-    iarg = 3
+    iarg = 2
     while iarg < narg:
         if arg[iarg] == "outfile":
-            if iarg + 2 > narg: error("outfile path not defined")
+            if iarg + 2 > narg: error("outfile path not defined ")
             outfile = arg[iarg + 1]
             iarg += 2
         elif arg[iarg] == "prof":
-            print ("bug")
-            if iarg + 2 > narg: error("prof arg err")
+            if iarg + 2 > narg: error("prof arg should be 'yes' or 'no' ")
             prof = arg[iarg + 1]
+            iarg += 2
+        elif arg[iarg] == "surf":
+            if iarg + 2 > narg: error("surf arg should be 'yes' or 'no' ")
+            surf = arg[iarg + 1]
             iarg += 2
         elif arg[iarg] == "norm":
             if iarg + 4 > narg: error("norm should be followed by 'upu uptemp uptvib' ")
@@ -299,7 +324,7 @@ if __name__ == '__main__':
             uptemp = float(arg[iarg + 2])
             uptvib = float(arg[iarg + 3])
             iarg += 4
-        else: error("2")
+        else: error("")
 
     # data reconstruction
     ds2ff_list = read_data_ds2ff('DS2FF.DAT')
@@ -307,8 +332,12 @@ if __name__ == '__main__':
 
     # switch postprocessing style
     if style == 'couette':
+        print('Couette flow post-processing start......')
         pp4couette(ds2ff_list, ds2su_list)
+        print('Couette flow post-processing complete!')
     elif style == 'blunt':
+        print('Blunt flow post-processing start......')
         pp4blunt(ds2ff_list, ds2su_list)
+        print('Blunt flow post-processing complete!')
     else:
         error('pp style should be "couette" or "blunt", postprocessing abort! ')
