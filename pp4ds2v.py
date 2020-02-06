@@ -18,7 +18,7 @@ plt.switch_backend('agg')
 
 def error(str):
     if str: print("ERROR:", str)
-    else: print("Syntax: pp4ds2v.py style blunt/couette keyword args ...")
+    else: print("Syntax: pp4ds2v.py blunt/couette keyword args ...")
     sys.exit()
 
 
@@ -303,6 +303,7 @@ if __name__ == '__main__':
     outfile = "resaved.dat"
     prof = "no"
     surf = "no"
+    upu, uptemp, uptvib = 1, 1, 1
 
     iarg = 2
     while iarg < narg:
