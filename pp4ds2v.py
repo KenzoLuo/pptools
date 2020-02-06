@@ -270,37 +270,24 @@ def cal_heat_flux_stag(ds2su_list):
 
 def pp4blunt(ds2ff_list, ds2su_list):
     resave_data_blunt(ds2ff_list)
-    stag_line_list = extract_sl_data(ds2ff_list)
-    visualize_stag_line(stag_line_list)
     cal_heat_flux_stag(ds2su_list)
     if prof == 'yes':
         extract_shear_profile(ds2ff_list)
+    if stagl == 'yes':
+        stag_line_list = extract_sl_data(ds2ff_list)
+        visualize_stag_line(stag_line_list)
     if surf == 'yes':
         resave_surf_blunt(ds2su_list)
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='detect table lines')
-    # parser.add_argument('style', type=str, help='the path of input file.')
-    # parser.add_argument('--resave', type=str,
-    #                     help='the resaved file.', default='resaved.dat')
-    # parser.add_argument('--prof', type=str,
-    #                     help='extract flow profile in the shear flow or not, "yes" or "no". ', default='no')
-    # parser.add_argument('--upu', type=int,
-    #                     help='the velocity of upper boundary', default=1)
-    # parser.add_argument('--uptemp', type=int,
-    #                     help='the temperature of upper boundary', default=1)
-    # parser.add_argument('--uptvib', type=int,
-    #                     help='the vibrational temp of upper boundary', default=1)
-    # args = parser.parse_args()
-
     arg = sys.argv
     narg = len(sys.argv)
-    # print (narg)
     if narg < 2: error("")
     style = arg[1]
     
     outfile = "resaved.dat"
+    stagl = "no"
     prof = "no"
     surf = "no"
     upu, uptemp, uptvib = 1, 1, 1
@@ -311,13 +298,17 @@ if __name__ == '__main__':
             if iarg + 2 > narg: error("outfile path not defined ")
             outfile = arg[iarg + 1]
             iarg += 2
-        elif arg[iarg] == "prof":
-            if iarg + 2 > narg: error("prof arg should be 'yes' or 'no' ")
-            prof = arg[iarg + 1]
+        elif arg[iarg] == "stagl":
+            if iarg + 2 > narg: error("stagl arg should be 'yes' or 'no' ")
+            stagl = arg[iarg + 1]
             iarg += 2
         elif arg[iarg] == "surf":
             if iarg + 2 > narg: error("surf arg should be 'yes' or 'no' ")
             surf = arg[iarg + 1]
+            iarg += 2
+        elif arg[iarg] == "prof":
+            if iarg + 2 > narg: error("prof arg should be 'yes' or 'no' ")
+            prof = arg[iarg + 1]
             iarg += 2
         elif arg[iarg] == "norm":
             if iarg + 4 > narg: error("norm should be followed by 'upu uptemp uptvib' ")
