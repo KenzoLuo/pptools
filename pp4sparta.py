@@ -3,17 +3,11 @@
 # psotprocessing tool for sparta output data
 # 1. resave output data as tecplot flie
 # 2. compress file size
-# 3. surface pressure, shear stress and heat flux (unfinished)
 # Kenzo LUO
 # 2020.02.10
 
-import numpy as np
-import os
 import random
-import argparse
-import matplotlib.pyplot as plt
 import sys
-
 
 # error message
 def error(str):
@@ -22,7 +16,7 @@ def error(str):
     sys.exit()
 
 
-# read_data
+# read data
 def read_data(file_path,frac,cut):
     data_list = []
     with open(file_path, 'r') as f:
@@ -46,8 +40,9 @@ def read_data(file_path,frac,cut):
     return data_list
 
 
+# resave data
 def resave_data(data_list,headfile,outfile):
-    with open(headfile, 'r', encoding='utf-8') as hf:
+    with open(headfile, 'r') as hf:
         head_text = hf.readlines()[0]
         # print(head_text)
     with open(outfile, 'w') as f:
@@ -90,4 +85,3 @@ if __name__ == '__main__':
     print("Data is resaving...")
     resave_data(data_list,headflie,outfile)
     print("Post-processing complete!")
-
