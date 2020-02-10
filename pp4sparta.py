@@ -24,7 +24,7 @@ def error(str):
 
 # read_data
 def read_data(file_path,frac,cut):
-    grid_list = []
+    data_list = []
     with open(file_path, 'r') as f:
         lines_list = f.readlines()
         for lines in lines_list[9:]:
@@ -35,18 +35,18 @@ def read_data(file_path,frac,cut):
             lines = list(map(float, lines))
             if cut == -1: # do not cut flow box
                 if random.random() < frac:
-                    grid_list.append(lines)
+                    data_list.append(lines)
                 else:
                     continue
             else:
                 if (lines[cut-1] > 1e-6) & (random.random() < frac):
-                    grid_list.append(lines)
+                    data_list.append(lines)
                 else:
                     continue
-    return grid_list
+    return data_list
 
 
-def resave_data(grid_list,headfile,outfile):
+def resave_data(data_list,headfile,outfile):
     with open(headfile, 'r', encoding='utf-8') as hf:
         head_text = hf.readlines()[0]
         # print(head_text)
@@ -54,8 +54,8 @@ def resave_data(grid_list,headfile,outfile):
         # tecplot data file
         f.write('TITLE ="sparta_data"\n')
         f.write(head_text)
-        for idx in range(len(grid_list)):
-            each_data = map(str, grid_list[idx])
+        for idx in range(len(data_list)):
+            each_data = map(str, data_list[idx])
             f.write(' '.join(tuple(each_data)) + '\n')
         print("sparta data '%s' resaved. " %(outfile))
 
@@ -86,8 +86,8 @@ if __name__ == '__main__':
     # data reconstruction
     print("Post-processing start...")
     print("Data read-in start...")
-    grid_list = read_data(infile,frac,cut)
+    data_list = read_data(infile,frac,cut)
     print("Data is resaving...")
-    resave_data(grid_list,headflie,outfile)
+    resave_data(data_list,headflie,outfile)
     print("Post-processing complete!")
 
