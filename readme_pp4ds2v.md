@@ -41,4 +41,4 @@ pp4ds2v.py blunt outfile filename.dat stagl yes/no surf yes/no prof yes/no
 pp4ds2v.py couette outfile filename.dat norm upu uptemp uptvib
 ```
 
-各个选项的默认值都是no，`norm`的默认值为$(1,1,1)$，即不进行归一化。
+`keyword args`是非必须的，可以根据需要添加。各个选项的默认值都是no，`norm`的默认值为$(1,1,1)$，即不进行归一化。
